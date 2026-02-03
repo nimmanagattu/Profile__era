@@ -14,7 +14,8 @@ const AdminLogin = ({ onLogin }) => {
         setLoading(true);
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const apiUrl = import.meta.env.VITE_API_URL;
+            if (!apiUrl) throw new Error("VITE_API_URL not defined");
             const response = await axios.get(`${apiUrl}/api/admin/verify`, {
                 headers: { 'x-admin-api-key': apiKey }
             });

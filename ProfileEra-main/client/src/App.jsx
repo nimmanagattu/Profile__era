@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileText, Plus, Minus, ArrowRight } from 'lucide-react';
+import { Search, FileText, Plus, Minus, ArrowRight, Menu, X } from 'lucide-react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -22,24 +22,83 @@ const Logo = ({ className = "", dark = false }) => (
 
 // --- Components ---
 
-const Navbar = () => (
-    <nav className="fixed top-0 left-0 right-0 flex items-center px-12 py-6 bg-[#EFF6FF]/95 z-50 backdrop-blur-md border-b border-blue-100 shadow-sm">
-        <div className="w-1/4">
-            <a href="#home" className="hover:opacity-80 transition-opacity">
-                <Logo className="scale-100 origin-left" />
-            </a>
-        </div>
-        <div className="hidden lg:flex flex-1 justify-center space-x-10 text-gray-700 font-bold text-sm tracking-tight">
-            <a href="#home" className="text-[#1D4ED8] border-b-2 border-[#1D4ED8] pb-1">Home</a>
-            <a href="#who" className="hover:text-blue-700 transition">Who this is for?</a>
-            <a href="#services" className="hover:text-blue-700 transition">Our services</a>
-            <a href="#contact" className="hover:text-blue-700 transition">Contact us</a>
-            <a href="#pricing" className="hover:text-blue-700 transition">Pricing</a>
-            <a href="#trust" className="hover:text-blue-700 transition">Trust</a>
-        </div>
-        <div className="hidden lg:block w-1/4"></div>
-    </nav>
-);
+const Navbar = () => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const navLinks = [
+        { name: "Home", href: "#home" },
+        { name: "Who this is for?", href: "#who" },
+        { name: "Our services", href: "#services" },
+        { name: "Contact us", href: "#contact" },
+        { name: "Pricing", href: "#pricing" },
+        { name: "Trust", href: "#trust" }
+    ];
+
+    const toggleMenu = () => setIsOpen(!isOpen);
+
+    return (
+        <nav className="fixed top-0 left-0 right-0 py-4 md:py-6 bg-[#EFF6FF]/95 z-50 backdrop-blur-md border-b border-blue-100 shadow-sm px-6 md:px-12">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="w-1/4">
+                    <a href="#home" className="hover:opacity-80 transition-opacity">
+                        <Logo className="scale-90 md:scale-100 origin-left" />
+                    </a>
+                </div>
+
+                {/* Desktop Menu */}
+                <div className="hidden lg:flex flex-1 justify-center space-x-10 text-gray-700 font-bold text-sm tracking-tight">
+                    {navLinks.map((link) => (
+                        <a
+                            key={link.name}
+                            href={link.href}
+                            className={`${link.name === 'Home' ? 'text-[#1D4ED8] border-b-2 border-[#1D4ED8] pb-1' : 'hover:text-blue-700 transition'}`}
+                        >
+                            {link.name}
+                        </a>
+                    ))}
+                </div>
+
+                <div className="hidden lg:block w-1/4"></div>
+
+                {/* Mobile Menu Toggle */}
+                <div className="lg:hidden">
+                    <button
+                        onClick={toggleMenu}
+                        className="p-2 text-[#1D4ED8] hover:bg-blue-50 rounded-lg transition-colors"
+                        aria-label="Toggle Navigation"
+                    >
+                        {isOpen ? <X size={28} /> : <Menu size={28} />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile Menu Overlay */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="lg:hidden overflow-hidden bg-white border-t border-blue-50 mt-4"
+                    >
+                        <div className="flex flex-col space-y-4 p-6">
+                            {navLinks.map((link) => (
+                                <a
+                                    key={link.name}
+                                    href={link.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-lg font-bold text-gray-800 hover:text-[#1D4ED8] transition-colors py-2 border-b border-gray-50 last:border-0"
+                                >
+                                    {link.name}
+                                </a>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </nav>
+    );
+};
 
 const SectionBranding = ({ title }) => (
     <div className="flex flex-col items-center mb-8">
@@ -501,7 +560,8 @@ const ContactForm = () => {
             data.append('naukri', formData.naukri);
             if (resume) data.append('resume', resume);
 
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const apiUrl = import.meta.env.VITE_API_URL;
+            if (!apiUrl) throw new Error("VITE_API_URL is not defined");
             await axios.post(`${apiUrl}/api/leads`, data, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });

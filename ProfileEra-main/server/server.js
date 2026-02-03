@@ -27,22 +27,25 @@ app.use(helmet());
 app.set('trust proxy', 1); // Trust first proxy (needed for Vercel/Railway)
 
 // CORS Configuration
-const allowedOrigins = [
-    'http://localhost:5173', // Vite default
-    'http://localhost:3000',
-    'https://profileera.com',
-    'https://www.profileera.com'
-];
+// CORS Configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:5173', 'http://localhost:3000'];
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            console.error(`CORS Error: Origin ${origin} not allowed`);
             callback(new Error('Not allowed by CORS'));
         }
     },
-    allowedHeaders: ['Content-Type', 'x-admin-api-key']
+    allowedHeaders: ['Content-Type', 'x-admin-api-key'],
+    credentials: true
 }));
 
 app.use(express.json());
@@ -67,7 +70,12 @@ const upload = multer({
 });
 
 // 1. Connect to MongoDB
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/profileera';
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+    console.error("FATAL: MONGO_URI is not defined in environment variables");
+    process.exit(1);
+}
+
 mongoose.connect(MONGO_URI)
     .then(() => console.log("Database Connected Successfully"))
     .catch(err => {

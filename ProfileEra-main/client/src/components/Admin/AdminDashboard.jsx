@@ -14,7 +14,7 @@ const AdminDashboard = ({ adminKey, onLogout }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [deleteId, setDeleteId] = useState(null);
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     const fetchLeads = async () => {
         setLoading(true);
