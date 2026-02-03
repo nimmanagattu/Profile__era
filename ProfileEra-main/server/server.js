@@ -61,7 +61,10 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
-const upload = multer({ storage });
+const upload = multer({
+    storage,
+    limits: { fileSize: 1 * 1024 * 1024 } // 1MB Limit
+});
 
 // 1. Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/profileera';
