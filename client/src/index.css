@@ -24,3 +24,12 @@ input:focus {
 .filter-blue-gray {
     filter: hue-rotate(-50deg) saturate(1.0) brightness(1.05);
 }
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

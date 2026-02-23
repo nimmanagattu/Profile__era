@@ -36,15 +36,25 @@ const Navbar = () => {
     const toggleMenu = () => setIsOpen(!isOpen);
 
     const handleNavClick = (e, href) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         setIsOpen(false);
         if (href.startsWith('#')) {
             const targetId = href.replace('#', '');
             const elem = document.getElementById(targetId);
             if (elem) {
-                setTimeout(() => {
-                    elem.scrollIntoView({ behavior: 'smooth' });
-                }, 150); // slight delay to allow menu exit animation to start
+                // Smooth scroll with offset for sticky navbar
+                const scroll = () => {
+                    const offset = 100; // Increased offset to ensure titles are visible
+                    const elementPosition = elem.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                };
+
+                setTimeout(scroll, 100);
             }
             window.history.pushState(null, '', href);
         } else {
@@ -53,8 +63,9 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="fixed top-0 left-0 right-0 py-4 md:py-6 bg-[#EFF6FF]/95 z-50 backdrop-blur-md border-b border-blue-100 shadow-sm px-6 md:px-12">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <nav className="fixed top-0 left-0 right-0 bg-[#EFF6FF]/95 z-50 backdrop-blur-md border-b border-blue-100 shadow-sm">
+            {/* Main Navbar */}
+            <div className="max-w-7xl mx-auto flex items-center justify-between py-4 md:py-6 px-6 md:px-12">
                 <div className="w-1/4">
                     <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="hover:opacity-80 transition-opacity">
                         <Logo className="scale-90 md:scale-100 origin-left" />
@@ -68,7 +79,7 @@ const Navbar = () => {
                             key={link.name}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
-                            className={`${link.name === 'Home' ? 'text-[#1D4ED8] border-b-2 border-[#1D4ED8] pb-1' : 'hover:text-blue-700 transition'}`}
+                            className="hover:text-blue-700 transition"
                         >
                             {link.name}
                         </a>
@@ -89,6 +100,21 @@ const Navbar = () => {
                 </div>
             </div>
 
+            {/* Mobile Scrollable Tabs (Quick Access) */}
+            <div className="lg:hidden w-full border-t border-blue-50 bg-white/50 overflow-x-auto no-scrollbar">
+                <div className="flex whitespace-nowrap px-4 py-3 space-x-6 text-sm font-bold text-gray-600">
+                    {navLinks.map((link) => (
+                        <button
+                            key={link.name}
+                            onClick={() => handleNavClick(null, link.href)}
+                            className="hover:text-[#1D4ED8] transition-colors focus:text-[#1D4ED8] active:text-[#1D4ED8]"
+                        >
+                            {link.name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isOpen && (
@@ -96,18 +122,17 @@ const Navbar = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="lg:hidden overflow-hidden bg-white border-t border-blue-50 mt-4"
+                        className="lg:hidden overflow-hidden bg-white border-t border-blue-50"
                     >
                         <div className="flex flex-col space-y-4 p-6">
                             {navLinks.map((link) => (
-                                <a
+                                <button
                                     key={link.name}
-                                    href={link.href}
-                                    onClick={(e) => handleNavClick(e, link.href)}
-                                    className="block w-full text-lg font-bold text-gray-800 hover:text-[#1D4ED8] transition-colors py-4 border-b border-gray-50 last:border-0"
+                                    onClick={() => handleNavClick(null, link.href)}
+                                    className="block w-full text-left text-lg font-bold text-gray-800 hover:text-[#1D4ED8] transition-colors py-4 border-b border-gray-50 last:border-0"
                                 >
                                     {link.name}
-                                </a>
+                                </button>
                             ))}
                         </div>
                     </motion.div>
@@ -629,7 +654,7 @@ const Footer = () => (
 
 const LandingPage = () => {
     return (
-        <div className="font-sans text-gray-900 overflow-x-hidden">
+        <div className="font-sans text-gray-900 overflow-x-hidden pt-32 md:pt-24">
             <Navbar />
             <Hero />
             <WhoIsThisFor />
